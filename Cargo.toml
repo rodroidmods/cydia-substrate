@@ -1,0 +1,43 @@
+[package]
+name = "substrate-rs"
+version = "0.1.0"
+edition = "2021"
+authors = ["Substrate Contributors"]
+description = "Powerful function hooking library for Android and Linux - Rust rewrite of Cydia Substrate and And64InlineHook"
+readme = "README.md"
+homepage = "https://github.com/yourusername/substrate-rs"
+repository = "https://github.com/yourusername/substrate-rs"
+license = "LGPL-3.0"
+keywords = ["hook", "inject", "android", "il2cpp", "substrate"]
+categories = ["api-bindings", "os", "development-tools"]
+documentation = "https://docs.rs/substrate-rs"
+
+[lib]
+name = "substrate"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+libc = "0.2"
+thiserror = "1.0"
+cfg-if = "1.0"
+
+[dev-dependencies]
+
+[features]
+debug = []
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+debug = false
+overflow-checks = false
+
+[profile.release.package."*"] 
+opt-level = 3
+codegen-units = 1
+strip = true
+debug = false
+overflow-checks = false
