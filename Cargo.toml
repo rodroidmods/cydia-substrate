@@ -2,11 +2,11 @@
 name = "substrate-rs"
 version = "0.1.0"
 edition = "2021"
-authors = ["Substrate Contributors"]
+authors = ["Rodroid Mods"]
 description = "Powerful function hooking library for Android and Linux - Rust rewrite of Cydia Substrate and And64InlineHook"
 readme = "README.md"
-homepage = "https://github.com/yourusername/substrate-rs"
-repository = "https://github.com/yourusername/substrate-rs"
+homepage = "https://github.com/rodroidmods/cydia-substrate"
+repository = "https://github.com/rodroidmods/cydia-substrate"
 license = "LGPL-3.0"
 keywords = ["hook", "inject", "android", "il2cpp", "substrate"]
 categories = ["api-bindings", "os", "development-tools"]
