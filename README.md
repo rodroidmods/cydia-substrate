@@ -36,7 +36,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-substrate = "0.1"
+substrate-rs = "0.1.1"
 ```
 
 Or for C/C++ projects, download the prebuilt library from releases.
@@ -440,7 +440,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 - Jay Freeman (saurik) - Original Cydia Substrate
 - Rprop - And64InlineHook implementation
-- The Rust community
+- Rodroid Mods
 
 ## FAQ
 

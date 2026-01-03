@@ -7,7 +7,7 @@
 ```toml
 # Add to Cargo.toml
 [dependencies]
-substrate-rs = "0.1"
+substrate-rs = "0.1.1"
 ```
 
 ### Basic Usage
