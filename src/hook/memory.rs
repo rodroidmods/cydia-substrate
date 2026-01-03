@@ -8,7 +8,7 @@ pub struct ProtectedMemory {
 }
 
 impl ProtectedMemory {
-    pub unsafe fn new(data: *mut u8, size: usize) -> Result<Self> {
+    pub unsafe fn new(data: *mut u8, size: usize) -> Result<Self> { unsafe {
         if data.is_null() || size == 0 {
             return Err(SubstrateError::NullPointer);
         }
@@ -30,7 +30,7 @@ impl ProtectedMemory {
         }
 
         Ok(Self { address, width })
-    }
+    }}
 }
 
 impl Drop for ProtectedMemory {
@@ -56,7 +56,7 @@ impl Drop for ProtectedMemory {
     }
 }
 
-pub unsafe fn allocate_trampoline(size: usize) -> Result<*mut u8> {
+pub unsafe fn allocate_trampoline(size: usize) -> Result<*mut u8> { unsafe {
     let ptr = mmap(
         ptr::null_mut(),
         size,
@@ -72,9 +72,9 @@ pub unsafe fn allocate_trampoline(size: usize) -> Result<*mut u8> {
     }
 
     Ok(ptr as *mut u8)
-}
+}}
 
-pub unsafe fn make_executable(ptr: *mut u8, size: usize) -> Result<()> {
+pub unsafe fn make_executable(ptr: *mut u8, size: usize) -> Result<()> { unsafe {
     let result = mprotect(ptr as *mut c_void, size, PROT_READ | PROT_EXEC);
 
     if result == -1 {
@@ -83,8 +83,8 @@ pub unsafe fn make_executable(ptr: *mut u8, size: usize) -> Result<()> {
     }
 
     Ok(())
-}
+}}
 
-pub unsafe fn free_trampoline(ptr: *mut u8, size: usize) {
+pub unsafe fn free_trampoline(ptr: *mut u8, size: usize) { unsafe {
     munmap(ptr as *mut c_void, size);
-}
+}}

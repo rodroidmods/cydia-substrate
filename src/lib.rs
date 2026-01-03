@@ -18,7 +18,7 @@ pub type MSImageRef = *const c_void;
 
 static MS_DEBUG: AtomicBool = AtomicBool::new(false);
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub static mut MSDebug: bool = false;
 
 pub fn set_debug(enabled: bool) {
@@ -72,12 +72,12 @@ pub fn is_debug() -> bool {
 ///     MSHookFunction(target, my_replacement as *mut c_void, &mut ORIGINAL);
 /// }
 /// ```
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn MSHookFunction(
     symbol: *mut c_void,
     replace: *mut c_void,
     result: *mut *mut c_void,
-) {
+) { unsafe {
     if symbol.is_null() {
         return;
     }
@@ -123,7 +123,7 @@ pub unsafe extern "C" fn MSHookFunction(
             result_ptr,
         );
     }
-}
+}}
 
 /// ARM64-specific hook function (alias for MSHookFunction).
 ///
@@ -133,14 +133,14 @@ pub unsafe extern "C" fn MSHookFunction(
 /// # Safety
 ///
 /// Same safety requirements as `MSHookFunction`. See [`MSHookFunction`] for details.
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn A64HookFunction(
     symbol: *mut c_void,
     replace: *mut c_void,
     result: *mut *mut c_void,
-) {
+) { unsafe {
     MSHookFunction(symbol, replace, result);
-}
+}}
 
 /// Find a symbol by name within a loaded image.
 ///
@@ -156,8 +156,8 @@ pub unsafe extern "C" fn A64HookFunction(
 /// # Safety
 ///
 /// The `name` parameter must be a valid null-terminated C string.
-#[no_mangle]
-pub unsafe extern "C" fn MSFindSymbol(_image: MSImageRef, name: *const c_char) -> *mut c_void {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn MSFindSymbol(_image: MSImageRef, name: *const c_char) -> *mut c_void { unsafe {
     if name.is_null() {
         return ptr::null_mut();
     }
@@ -168,7 +168,7 @@ pub unsafe extern "C" fn MSFindSymbol(_image: MSImageRef, name: *const c_char) -
     };
 
     ptr::null_mut()
-}
+}}
 
 /// Get a reference to a loaded image (library) by filename.
 ///
@@ -183,7 +183,7 @@ pub unsafe extern "C" fn MSFindSymbol(_image: MSImageRef, name: *const c_char) -
 /// # Safety
 ///
 /// The `_file` parameter must be a valid null-terminated C string.
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn MSGetImageByName(_file: *const c_char) -> MSImageRef {
     ptr::null()
 }
@@ -202,7 +202,7 @@ pub unsafe extern "C" fn MSGetImageByName(_file: *const c_char) -> MSImageRef {
 /// # Safety
 ///
 /// This function requires appropriate permissions and the library path must be valid.
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn MSHookProcess(_pid: c_int, _library: *const c_char) -> bool {
     false
 }
@@ -246,7 +246,7 @@ pub unsafe extern "C" fn MSHookProcess(_pid: c_int, _library: *const c_char) -> 
 ///     ).expect("Hook failed");
 /// }
 /// ```
-pub unsafe fn hook_function<T>(symbol: *mut T, replace: *mut T) -> Result<*mut T> {
+pub unsafe fn hook_function<T>(symbol: *mut T, replace: *mut T) -> Result<*mut T> { unsafe {
     if symbol.is_null() || replace.is_null() {
         return Err(SubstrateError::NullPointer);
     }
@@ -295,7 +295,7 @@ pub unsafe fn hook_function<T>(symbol: *mut T, replace: *mut T) -> Result<*mut T
     }
 
     Ok(result)
-}
+}}
 
 /// Find a symbol address in a specific process.
 ///

@@ -65,11 +65,11 @@ fn pread(file: &mut File, buf: &mut [u8], offset: u64) -> Result<usize> {
     Ok(file.read(buf)?)
 }
 
-unsafe fn read_struct<T>(file: &mut File, offset: u64) -> Result<T> {
+unsafe fn read_struct<T>(file: &mut File, offset: u64) -> Result<T> { unsafe {
     let mut data = vec![0u8; std::mem::size_of::<T>()];
     pread(file, &mut data, offset)?;
     Ok(std::ptr::read(data.as_ptr() as *const T))
-}
+}}
 
 pub fn load_elf_symbols(filename: &str) -> Result<ElfSymbols> {
     let mut file = File::open(filename)?;

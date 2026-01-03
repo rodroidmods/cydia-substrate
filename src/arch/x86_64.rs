@@ -45,31 +45,31 @@ fn size_of_move64() -> usize {
     3
 }
 
-unsafe fn write_u8(current: &mut *mut u8, value: u8) {
+unsafe fn write_u8(current: &mut *mut u8, value: u8) { unsafe {
     **current = value;
     *current = current.add(1);
-}
+}}
 
-unsafe fn write_u32(current: &mut *mut u8, value: u32) {
+unsafe fn write_u32(current: &mut *mut u8, value: u32) { unsafe {
     ptr::write_unaligned(*current as *mut u32, value.to_le());
     *current = current.add(4);
-}
+}}
 
-unsafe fn write_i32(current: &mut *mut u8, value: i32) {
+unsafe fn write_i32(current: &mut *mut u8, value: i32) { unsafe {
     write_u32(current, value as u32);
-}
+}}
 
-unsafe fn write_bytes(current: &mut *mut u8, data: *const u8, len: usize) {
+unsafe fn write_bytes(current: &mut *mut u8, data: *const u8, len: usize) { unsafe {
     ptr::copy_nonoverlapping(data, *current, len);
     *current = current.add(len);
-}
+}}
 
-unsafe fn write_skip(current: &mut *mut u8, size: isize) {
+unsafe fn write_skip(current: &mut *mut u8, size: isize) { unsafe {
     write_u8(current, 0xe9);
     write_i32(current, size as i32);
-}
+}}
 
-unsafe fn push_pointer(current: &mut *mut u8, target: usize) {
+unsafe fn push_pointer(current: &mut *mut u8, target: usize) { unsafe {
     write_u8(current, 0x68);
     write_u32(current, target as u32);
 
@@ -81,9 +81,9 @@ unsafe fn push_pointer(current: &mut *mut u8, target: usize) {
         write_u8(current, 0x04);
         write_u32(current, high);
     }
-}
+}}
 
-unsafe fn write_jump(current: &mut *mut u8, target: usize) {
+unsafe fn write_jump(current: &mut *mut u8, target: usize) { unsafe {
     let source = *current as usize;
 
     if IA32 || is_32bit_offset(target, source + 5) {
@@ -92,26 +92,26 @@ unsafe fn write_jump(current: &mut *mut u8, target: usize) {
         push_pointer(current, target);
         write_u8(current, 0xc3);
     }
-}
+}}
 
-unsafe fn write_pop(current: &mut *mut u8, target: u8) {
+unsafe fn write_pop(current: &mut *mut u8, target: u8) { unsafe {
     if (target >> 3) != 0 {
         write_u8(current, 0x40 | ((target & 0x08) >> 3));
     }
     write_u8(current, 0x58 | (target & 0x07));
-}
+}}
 
-unsafe fn write_move64(current: &mut *mut u8, source: u8, target: u8) {
+unsafe fn write_move64(current: &mut *mut u8, source: u8, target: u8) { unsafe {
     write_u8(current, 0x48 | ((target & 0x08) >> 3 << 2) | ((source & 0x08) >> 3));
     write_u8(current, 0x8b);
     write_u8(current, ((target & 0x07) << 3) | (source & 0x07));
-}
+}}
 
 pub unsafe fn hook_function_x86_64(
     symbol: *mut u8,
     replace: *mut u8,
     result: *mut *mut u8,
-) -> Result<usize> {
+) -> Result<usize> { unsafe {
     if symbol.is_null() {
         return Err(SubstrateError::NullPointer);
     }
@@ -273,4 +273,4 @@ pub unsafe fn hook_function_x86_64(
     }
 
     Ok(used)
-}
+}}

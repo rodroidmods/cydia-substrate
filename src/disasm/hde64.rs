@@ -145,7 +145,7 @@ impl std::fmt::Debug for DispUnion {
     }
 }
 
-pub unsafe fn hde64_disasm(code: *const u8, hs: *mut Hde64s) -> u32 {
+pub unsafe fn hde64_disasm(code: *const u8, hs: *mut Hde64s) -> u32 { unsafe {
     let mut p = code;
     std::ptr::write_bytes(hs, 0, 1);
 
@@ -478,4 +478,4 @@ pub unsafe fn hde64_disasm(code: *const u8, hs: *mut Hde64s) -> u32 {
     }
 
     (*hs).len as u32
-}
+}}

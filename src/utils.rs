@@ -148,8 +148,8 @@ pub fn string_to_offset(s: &str) -> Result<usize> {
 /// # Returns
 ///
 /// Base address of the library, or 0 if not found.
-#[no_mangle]
-pub unsafe extern "C" fn findLibrary(library: *const c_char) -> usize {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn findLibrary(library: *const c_char) -> usize { unsafe {
     if library.is_null() {
         return 0;
     }
@@ -160,7 +160,7 @@ pub unsafe extern "C" fn findLibrary(library: *const c_char) -> usize {
     };
 
     find_library(library_name).unwrap_or(0)
-}
+}}
 
 /// C FFI: Convert a relative offset to an absolute address.
 ///
@@ -179,8 +179,8 @@ pub unsafe extern "C" fn findLibrary(library: *const c_char) -> usize {
 /// ```c
 /// uintptr_t addr = getAbsoluteAddress("libil2cpp.so", 0x123456);
 /// ```
-#[no_mangle]
-pub unsafe extern "C" fn getAbsoluteAddress(library: *const c_char, offset: usize) -> usize {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn getAbsoluteAddress(library: *const c_char, offset: usize) -> usize { unsafe {
     if library.is_null() {
         return 0;
     }
@@ -191,7 +191,7 @@ pub unsafe extern "C" fn getAbsoluteAddress(library: *const c_char, offset: usiz
     };
 
     get_absolute_address(library_name, offset).unwrap_or(0)
-}
+}}
 
 /// C FFI: Check if a library is loaded in the current process.
 ///
@@ -202,8 +202,8 @@ pub unsafe extern "C" fn getAbsoluteAddress(library: *const c_char, offset: usiz
 /// # Returns
 ///
 /// `true` if loaded, `false` otherwise.
-#[no_mangle]
-pub unsafe extern "C" fn isLibraryLoaded(library: *const c_char) -> bool {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn isLibraryLoaded(library: *const c_char) -> bool { unsafe {
     if library.is_null() {
         return false;
     }
@@ -214,7 +214,7 @@ pub unsafe extern "C" fn isLibraryLoaded(library: *const c_char) -> bool {
     };
 
     is_library_loaded(library_name)
-}
+}}
 
 /// C FFI: Parse a hexadecimal string to a numeric offset.
 ///
@@ -225,8 +225,8 @@ pub unsafe extern "C" fn isLibraryLoaded(library: *const c_char) -> bool {
 /// # Returns
 ///
 /// Parsed offset value, or 0 if parsing fails.
-#[no_mangle]
-pub unsafe extern "C" fn string2Offset(s: *const c_char) -> usize {
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn string2Offset(s: *const c_char) -> usize { unsafe {
     if s.is_null() {
         return 0;
     }
@@ -237,7 +237,7 @@ pub unsafe extern "C" fn string2Offset(s: *const c_char) -> usize {
     };
 
     string_to_offset(string).unwrap_or(0)
-}
+}}
 
 /// C FFI: Convenience function for hooking with automatic architecture detection.
 ///
@@ -247,12 +247,12 @@ pub unsafe extern "C" fn string2Offset(s: *const c_char) -> usize {
 /// # Safety
 ///
 /// Same safety requirements as `MSHookFunction`.
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub unsafe extern "C" fn hook(
     offset: *mut c_void,
     ptr: *mut c_void,
     orig: *mut *mut c_void,
-) {
+) { unsafe {
     #[cfg(target_arch = "aarch64")]
     {
         crate::A64HookFunction(offset, ptr, orig);
@@ -262,4 +262,4 @@ pub unsafe extern "C" fn hook(
     {
         crate::MSHookFunction(offset, ptr, orig);
     }
-}
+}}

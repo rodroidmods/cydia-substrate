@@ -111,7 +111,7 @@ unsafe fn fix_branch_imm(
                     ctxp.reset_current_ins(current_idx, *outpp);
                 }
                 (**outpp) = 0x58000051;
-                *(*outpp.add(1)) = 0xd61f0220;
+                outpp.add(1).write(0xd61f0220);
                 ptr::copy_nonoverlapping(
                     &absolute_addr as *const i64 as *const u32,
                     outpp.add(2),
@@ -125,8 +125,8 @@ unsafe fn fix_branch_imm(
                     ctxp.reset_current_ins(current_idx, *outpp);
                 }
                 **outpp = 0x58000071;
-                *(*outpp.add(1)) = 0x1000009e;
-                *(*outpp.add(2)) = 0xd61f0220;
+                outpp.add(1).write(0x1000009e);
+                outpp.add(2).write(0xd61f0220);
                 ptr::copy_nonoverlapping(
                     &absolute_addr as *const i64 as *const u32,
                     outpp.add(3),
@@ -200,9 +200,9 @@ unsafe fn fix_cond_comp_test_branch(
             ctxp.reset_current_ins(current_idx, *outpp);
         }
         **outpp = (((8 >> 2) << LSB) & !lmask) | (ins & lmask);
-        *(*outpp.add(1)) = 0x14000005;
-        *(*outpp.add(2)) = 0x58000051;
-        *(*outpp.add(3)) = 0xd61f0220;
+        outpp.add(1).write(0x14000005);
+        outpp.add(2).write(0x58000051);
+        outpp.add(3).write(0xd61f0220);
         ptr::copy_nonoverlapping(
             &absolute_addr as *const i64 as *const u32,
             outpp.add(4),
@@ -237,7 +237,8 @@ unsafe fn fix_loadlit(
     let ins = **inpp;
 
     if (ins & 0xff000000) == 0xd8000000 {
-        ctxp.process_fix_map(ctxp.get_and_set_current_index(*inpp, *outpp));
+        let idx = ctxp.get_and_set_current_index(*inpp, *outpp);
+        ctxp.process_fix_map(idx);
         *inpp = inpp.add(1);
         return true;
     }
@@ -285,7 +286,7 @@ unsafe fn fix_loadlit(
 
         let ns = (faligned + 1) / 4;
         **outpp = (((8 >> 2) << LSB) & !mask) | (ins & LMASK);
-        *(*outpp.add(1)) = 0x14000001 + ns;
+        outpp.add(1).write((0x14000001 + ns) as u32);
         ptr::copy_nonoverlapping(
             absolute_addr as *const u32,
             outpp.add(2),
@@ -344,7 +345,7 @@ unsafe fn fix_pcreladdr(
                 }
 
                 **outpp = 0x58000000 | (((8 >> 2) << LSB) & !MASK) | (ins & RMASK);
-                *(*outpp.add(1)) = 0x14000003;
+                outpp.add(1).write(0x14000003);
                 ptr::copy_nonoverlapping(
                     &absolute_addr as *const i64 as *const u32,
                     outpp.add(2),
@@ -386,7 +387,7 @@ unsafe fn fix_pcreladdr(
                 }
 
                 **outpp = 0x58000000 | (((8 >> 2) << LSB) & !MASK) | (ins & RMASK);
-                *(*outpp.add(1)) = 0x14000003;
+                outpp.add(1).write(0x14000003);
                 ptr::copy_nonoverlapping(
                     &absolute_addr as *const i64 as *const u32,
                     outpp.add(2),
@@ -428,7 +429,8 @@ unsafe fn fix_instructions(inp: *mut u32, count: i32, outp: *mut u32) {
             continue;
         }
 
-        ctx.process_fix_map(ctx.get_and_set_current_index(inp_cur, outp_cur));
+        let idx = ctx.get_and_set_current_index(inp_cur, outp_cur);
+        ctx.process_fix_map(idx);
         *outp_cur = *inp_cur;
         inp_cur = inp_cur.add(1);
         outp_cur = outp_cur.add(1);
