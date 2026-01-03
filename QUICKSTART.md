@@ -235,8 +235,8 @@ adb shell cat /proc/PID/maps | grep libname
 ## Support
 
 - 📚 [Documentation](https://docs.rs/substrate-rs)
-- 🐛 [Issues](https://github.com/YOURUSERNAME/substrate-rs/issues)
-- 💬 [Discussions](https://github.com/YOURUSERNAME/substrate-rs/discussions)
+- 🐛 [Issues](https://github.com/rodroidmods/cydia-substrate/issues)
+- 💬 [Discussions](https://github.com/rodroidmods/cydia-substrate/discussions)
 
 ## License
 

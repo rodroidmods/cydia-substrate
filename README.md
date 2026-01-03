@@ -462,5 +462,5 @@ A: Minimal - only affects hooked functions, optimized trampolines.
 ## Support
 
 - [Documentation](https://docs.rs/substrate-rs)
-- [Issue Tracker](https://github.com/yourusername/substrate-rs/issues)
+- [Issue Tracker](https://github.com/rodroidmods/cydia-substrate/issues)
 - [Crates.io](https://crates.io/crates/substrate-rs)
