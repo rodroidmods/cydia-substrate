@@ -2,7 +2,7 @@
 
 # Note
 
-The version 0.1.5 is the offcial stable version, eariler versions are not stable.
+Version 0.1.5 is the official stable release; earlier versions are not stable.
 
 [![Crates.io](https://img.shields.io/crates/v/substrate-rs.svg)](https://crates.io/crates/substrate-rs)
 [![Documentation](https://docs.rs/substrate-rs/badge.svg)](https://docs.rs/substrate-rs)
@@ -50,32 +50,32 @@ Or for C/C++ projects, download the prebuilt library from releases.
 ### Rust Usage
 
 ```rust
-use substrate::{hook_function, utils};
+use core::ffi::c_void;
+use substrate::{MSHookFunction, utils::getAbsoluteAddress};
 
-// Define your hook function
-unsafe extern "C" fn my_hooked_function(arg: i32) -> i32 {
-    println!("Hooked! arg = {}", arg);
-    // Call original if needed
-    arg + 100
+static mut LEVEL_BONUS: bool = false;
+static mut ORIG_RACE_UPDATE: *mut c_void = core::ptr::null_mut();
+
+unsafe extern "C" fn hook_RaceUpdate(raceManager: *mut c_void, deltaTime: f32) {
+    if LEVEL_BONUS && !raceManager.is_null() {
+        *((raceManager as *mut u8).add(0x4EC) as *mut f32) = 999.0;
+    }
+
+    if !ORIG_RACE_UPDATE.is_null() {
+        let orig: extern "C" fn(*mut c_void, f32) = core::mem::transmute(ORIG_RACE_UPDATE);
+        orig(raceManager, deltaTime);
+    }
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() {
     unsafe {
-        // Find the library base address
-        let lib_base = utils::find_library("libexample.so")?;
-
-        // Calculate absolute address
-        let target_addr = lib_base + 0x1234;
-
-        // Hook the function
-        let original = hook_function(
-            target_addr as *mut u8,
-            my_hooked_function as *mut u8
-        )?;
-
-        println!("Hook installed! Original at: {:p}", original);
+        let target = getAbsoluteAddress(b"libil2cpp.so\0".as_ptr() as *const i8, 0x19ADD4);
+        MSHookFunction(
+            target as *mut c_void,
+            hook_RaceUpdate as *mut c_void,
+            core::ptr::addr_of_mut!(ORIG_RACE_UPDATE),
+        );
     }
-    Ok(())
 }
 ```
 
@@ -83,30 +83,51 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ```cpp
 #include <substrate.h>
+#include <stdint.h>
+#include <stdbool.h>
 
-// Original function pointer
-void (*old_FixedUpdate)(void *instance);
+bool levelbonus = false;
 
-// Hook function
-void hooked_FixedUpdate(void *instance) {
-    // Your code here
-    printf("FixedUpdate hooked!\n");
+void (*orig_RaceUpdate)(void* raceManager, float deltaTime);
 
-    // Call original
-    if (old_FixedUpdate) {
-        old_FixedUpdate(instance);
+void hook_RaceUpdate(void* raceManager, float deltaTime) {
+    if (levelbonus && raceManager != NULL) {
+        *(float*)((uintptr_t)raceManager + 0x4EC) = 999.0f;
     }
+    orig_RaceUpdate(raceManager, deltaTime);
 }
 
-int main() {
-    // Hook using offset
+void (*old_update)(void *instance);
+void* (*GetCurrentCH)(void*);
+
+void update(void *instance) {
+    if (instance != NULL) {
+        bool isBlabla = true;
+        if (isBlabla) {
+            void* getClass = GetCurrentCH(instance);
+            if (getClass != NULL) {
+                *(bool*)((uintptr_t)getClass + 0xB4) = true;
+            }
+        }
+    }
+    old_update(instance);
+}
+
+__attribute__((constructor))
+static void init_hooks() {
+    GetCurrentCH = (void* (*)(void*))getAbsoluteAddress("libil2cpp.so", 0xC10738);
+
     MSHookFunction(
-        (void *)getAbsoluteAddress("libil2cpp.so", 0x123456),
-        (void *)hooked_FixedUpdate,
-        (void **)&old_FixedUpdate
+        (void*)getAbsoluteAddress("libil2cpp.so", 0x19ADD4),
+        (void*)hook_RaceUpdate,
+        (void**)&orig_RaceUpdate
     );
 
-    return 0;
+    MSHookFunction(
+        (void*)getAbsoluteAddress("libil2cpp.so", 0xC1123C),
+        (void*)update,
+        (void**)&old_update
+    );
 }
 ```
 
@@ -115,30 +136,31 @@ int main() {
 ### Example 1: Hooking with Symbol Name
 
 ```rust
-use substrate::{hook_function, utils};
+use core::ffi::c_void;
+use substrate::{MSHookFunction, utils::getAbsoluteAddress};
 
-unsafe extern "C" fn my_malloc(size: usize) -> *mut u8 {
-    println!("Allocating {} bytes", size);
-    // Call original malloc through dlsym or saved pointer
-    std::ptr::null_mut()
+static mut ORIG_MALLOC: *mut c_void = core::ptr::null_mut();
+
+unsafe extern "C" fn hook_malloc(size: usize) -> *mut c_void {
+    if !ORIG_MALLOC.is_null() {
+        let orig: extern "C" fn(usize) -> *mut c_void = core::mem::transmute(ORIG_MALLOC);
+        return orig(size);
+    }
+    core::ptr::null_mut()
 }
 
 fn main() {
     unsafe {
-        // Find malloc in libc
-        let malloc_addr = libc::dlsym(
-            libc::RTLD_DEFAULT,
-            b"malloc\0".as_ptr() as *const i8
-        );
-
-        if !malloc_addr.is_null() {
-            let original = hook_function(
-                malloc_addr as *mut u8,
-                my_malloc as *mut u8
-            ).expect("Failed to hook malloc");
-
-            println!("malloc hooked! Original: {:p}", original);
+        let malloc_addr = libc::dlsym(libc::RTLD_DEFAULT, b"malloc\0".as_ptr() as *const i8);
+        if malloc_addr.is_null() {
+            return;
         }
+
+        MSHookFunction(
+            malloc_addr as *mut c_void,
+            hook_malloc as *mut c_void,
+            core::ptr::addr_of_mut!(ORIG_MALLOC),
+        );
     }
 }
 ```
