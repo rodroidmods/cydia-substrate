@@ -1,6 +1,6 @@
 [package]
 name = "substrate-rs"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2024"
 authors = ["Rodroid Mods"]
 description = "Powerful function hooking library for Android and Linux - Rust rewrite of Cydia Substrate and And64InlineHook"

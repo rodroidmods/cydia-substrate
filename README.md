@@ -1,5 +1,9 @@
 # Substrate - Powerful Code Injection Platform
 
+# Note
+
+The version 0.1.5 is the offcial stable version, eariler versions are not stable.
+
 [![Crates.io](https://img.shields.io/crates/v/substrate-rs.svg)](https://crates.io/crates/substrate-rs)
 [![Documentation](https://docs.rs/substrate-rs/badge.svg)](https://docs.rs/substrate-rs)
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
@@ -36,7 +40,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-substrate-rs = "0.1.4"
+substrate-rs = "0.1.5"
 ```
 
 Or for C/C++ projects, download the prebuilt library from releases.
