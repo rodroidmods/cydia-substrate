@@ -44,13 +44,10 @@ impl Drop for ProtectedMemory {
 
             #[cfg(any(target_arch = "arm", target_arch = "aarch64"))]
             {
-                extern "C" {
-                    fn __clear_cache(begin: *mut c_void, end: *mut c_void);
+                unsafe extern "C" {
+                    fn __clear_cache(begin: *mut u8, end: *mut u8);
                 }
-                __clear_cache(
-                    self.address as *mut c_void,
-                    self.address.add(self.width) as *mut c_void,
-                );
+                __clear_cache(self.address, self.address.add(self.width));
             }
         }
     }

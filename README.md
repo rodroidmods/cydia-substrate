@@ -36,7 +36,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-substrate-rs = "0.1.1"
+substrate-rs = "0.1.4"
 ```
 
 Or for C/C++ projects, download the prebuilt library from releases.

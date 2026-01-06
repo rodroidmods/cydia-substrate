@@ -1,4 +1,5 @@
 #![doc = include_str!("../README.md")]
+#![allow(unsafe_op_in_unsafe_fn)]
 
 pub mod arch;
 pub mod debug;

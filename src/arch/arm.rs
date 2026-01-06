@@ -1,7 +1,6 @@
 use crate::disasm::arm_decoder::is_arm_pc_relative;
 use crate::error::{Result, SubstrateError};
 use crate::hook::memory::{allocate_trampoline, make_executable, ProtectedMemory};
-use std::ptr;
 
 #[repr(u32)]
 #[allow(dead_code)]
@@ -10,7 +9,6 @@ enum AReg {
 }
 
 const A_SP: u32 = 13;
-const A_LR: u32 = 14;
 const A_PC: u32 = 15;
 const A_R0: u32 = 0;
 const A_R1: u32 = 1;
@@ -74,7 +72,7 @@ pub unsafe fn hook_function_arm(
 
                 let rm = value & 0xf;
                 let rd = (value >> 12) & 0xf;
-                let rn = (value >> 16) & 0xf;
+                let _rn = (value >> 16) & 0xf;
                 let mode = (value >> 25) & 0x1;
 
                 let (copy_rn, guard) = if mode == 0 || rd != rm {

@@ -5,7 +5,6 @@ use std::ptr;
 
 const A_PC: u32 = 15;
 const A_LR: u32 = 14;
-const A_R0: u32 = 0;
 const A_R6: u32 = 6;
 const A_R7: u32 = 7;
 const A_AL: u32 = 14;
@@ -47,14 +46,14 @@ fn t_add_rd_rm(rd: u32, rm: u32) -> u16 {
 }
 
 fn t_blx(rm: u32) -> u16 {
-    (0x4780 | ((rm << 3) as u16))
+    0x4780 | ((rm << 3) as u16)
 }
 
 fn t_b_im(cond: u32, im: i32) -> u16 {
     if cond == A_AL {
         (0xe000 | ((im >> 1) & 0x7ff)) as u16
     } else {
-        (0xd000 | ((cond << 8) | ((im >> 1) & 0xff))) as u16
+        (0xd000 | ((cond << 8) | (((im >> 1) as u32) & 0xff))) as u16
     }
 }
 
@@ -62,19 +61,19 @@ fn t_cbz_rn_im(op: u32, rn: u32, im: i32) -> u16 {
     (0xb100 | ((op << 11) | (((im as u32 & 0x40) >> 6) << 9) | (((im as u32 & 0x3e) >> 1) << 3) | rn)) as u16
 }
 
-fn t1_mrs_rd_apsr(rd: u32) -> u16 {
+fn t1_mrs_rd_apsr(_rd: u32) -> u16 {
     0xf3ef
 }
 
-fn t2_mrs_rd_apsr(rd: u32) -> u16 {
-    (0x8000 | ((rd << 8) as u16))
+fn t2_mrs_rd_apsr(_rd: u32) -> u16 {
+    0x8000 | ((_rd << 8) as u16)
 }
 
 fn t1_msr_apsr_nzcvqg_rn(rn: u32) -> u16 {
     (0xf380 | rn) as u16
 }
 
-fn t2_msr_apsr_nzcvqg_rn(rn: u32) -> u16 {
+fn t2_msr_apsr_nzcvqg_rn(_rn: u32) -> u16 {
     0x8c00
 }
 
@@ -82,11 +81,11 @@ fn t_msr_apsr_nzcvqg_rn(rn: u32) -> u32 {
     ((t2_msr_apsr_nzcvqg_rn(rn) as u32) << 16) | (t1_msr_apsr_nzcvqg_rn(rn) as u32)
 }
 
-fn t1_ldr_rt_rn_im(rt: u32, rn: u32, im: i32) -> u16 {
+fn t1_ldr_rt_rn_im(_rt: u32, rn: u32, im: i32) -> u16 {
     (0xf850 | (if im < 0 { 0 } else { 1 << 7 }) | rn) as u16
 }
 
-fn t2_ldr_rt_rn_im(rt: u32, rn: u32, im: i32) -> u16 {
+fn t2_ldr_rt_rn_im(rt: u32, _rn: u32, im: i32) -> u16 {
     ((rt << 12) | im.abs() as u32) as u16
 }
 
@@ -333,7 +332,7 @@ pub unsafe fn hook_function_thumb(
                 end -= 2;
             } else if is_thumb_pc_relative_add(backup[offset]) {
                 let rd = (backup[offset] & 0x7) as u32;
-                let rm = ((backup[offset] >> 3) & 0x7) as u32;
+                let _rm = ((backup[offset] >> 3) & 0x7) as u32;
                 let h1 = ((backup[offset] >> 7) & 0x1) as u32;
 
                 if h1 != 0 {

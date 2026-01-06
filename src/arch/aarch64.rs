@@ -1,5 +1,5 @@
 use crate::error::{Result, SubstrateError};
-use crate::hook::memory::{allocate_trampoline, ProtectedMemory};
+use crate::hook::memory::ProtectedMemory;
 use std::ptr;
 use std::sync::atomic::{AtomicI32, Ordering};
 
@@ -295,7 +295,7 @@ unsafe fn fix_loadlit(
         *outpp = outpp.add(2 + ns as usize);
     } else {
         let mut new_offset = new_pc_offset;
-        let mut faligned_shifted = faligned >> 2;
+        let faligned_shifted = faligned >> 2;
         while (new_offset & (faligned_shifted as i64)) != 0 {
             **outpp = A64_NOP;
             *outpp = outpp.add(1);
@@ -438,7 +438,7 @@ unsafe fn fix_instructions(inp: *mut u32, count: i32, outp: *mut u32) {
     }
 
     let callback = inp_cur;
-    let mut pc_offset = (callback as i64 - outp_cur as i64) >> 2;
+    let pc_offset = (callback as i64 - outp_cur as i64) >> 2;
 
     if pc_offset.abs() >= (0x03ffffff >> 1) {
         if ((outp_cur.add(2) as usize) & 7) != 0 {
@@ -465,10 +465,10 @@ unsafe fn fix_instructions(inp: *mut u32, count: i32, outp: *mut u32) {
 unsafe fn clear_cache(ptr: *mut u8, size: usize) {
     #[cfg(target_arch = "aarch64")]
     {
-        extern "C" {
+        unsafe extern "C" {
             fn __clear_cache(start: *mut u8, end: *mut u8);
         }
-        __clear_cache(ptr, ptr.add(size));
+        unsafe { __clear_cache(ptr, ptr.add(size)) };
     }
 }
 
@@ -496,10 +496,9 @@ pub unsafe fn hook_function_aarch64(
 
     static POOL_INIT: std::sync::Once = std::sync::Once::new();
     POOL_INIT.call_once(|| {
-        let _ = ProtectedMemory::new(
-            INSNS_POOL.as_mut_ptr() as *mut u8,
-            std::mem::size_of_val(&INSNS_POOL),
-        );
+        let pool_ptr = core::ptr::addr_of_mut!(INSNS_POOL) as *mut u8;
+        let pool_size = core::mem::size_of::<[[u32; A64_MAX_INSTRUCTIONS * 10]; A64_MAX_BACKUPS]>();
+        let _ = unsafe { ProtectedMemory::new(pool_ptr, pool_size) };
     });
 
     let trampoline = if !result.is_null() {
@@ -515,7 +514,7 @@ pub unsafe fn hook_function_aarch64(
     let pc_offset = (replace as i64 - symbol as i64) >> 2;
 
     if pc_offset.abs() >= (0x03ffffff >> 1) {
-        let count = if (((original.add(2) as usize) & 7) != 0) { 5 } else { 4 };
+        let count = if ((original.add(2) as usize) & 7) != 0 { 5 } else { 4 };
 
         if !trampoline.is_null() {
             fix_instructions(original, count, trampoline as *mut u32);
