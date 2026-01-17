@@ -2,7 +2,7 @@
 
 # Note
 
-Version 0.1.5 is the official stable release; earlier versions are not stable.
+Version 0.1.7 is the official stable release; earlier versions are not stable.
 
 [![Crates.io](https://img.shields.io/crates/v/substrate-rs.svg)](https://crates.io/crates/substrate-rs)
 [![Documentation](https://docs.rs/substrate-rs/badge.svg)](https://docs.rs/substrate-rs)
@@ -40,7 +40,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-substrate-rs = "0.1.5"
+substrate-rs = "0.1.7"
 ```
 
 Or for C/C++ projects, download the prebuilt library from releases.
